@@ -1,0 +1,116 @@
+Criação de Tabelas:
+
+CREATE TABLE LIVROS (
+    ID_LIVRO   INTEGER     PRIMARY KEY AUTOINCREMENT
+                           UNIQUE,
+    NOME       STRING (50) UNIQUE,
+    ID_AUTOR   INTEGER     CONSTRAINT fk_livros_autores REFERENCES AUTORES (ID_AUTOR),
+    ID_GENERO  INTEGER     CONSTRAINT fk_livro_genero REFERENCES GENERO (ID_GENERO),
+    ANO        INTEGER (4) NOT NULL,
+    QUANTIDADE INTEGER     CONSTRAINT fk_livros_quantidade REFERENCES ESTOQUES (QUANTIDADE) 
+);
+
+
+CREATE TABLE AUTORES (
+    ID_AUTOR      INTEGER     PRIMARY KEY AUTOINCREMENT
+                              UNIQUE,
+    NOME          STRING (50) NOT NULL,
+    NASCIMENTO    INTEGER (4) NOT NULL,
+    SEXO          STRING (10) NOT NULL,
+    NACIONALIDADE STRING (15) NOT NULL,
+    IDADE         INTEGER (3) NOT NULL
+);
+
+
+
+CREATE TABLE CLIENTES_INFO (
+    ID_INFO_CLIENTE INTEGER     PRIMARY KEY AUTOINCREMENT
+                                UNIQUE,
+    ID_ENDERECO     INTEGER     CONSTRAINT fk_info_endereco REFERENCES CLIENTES_ENDERECO (ID_END_CLIENTE),
+    NOME            STRING (50) NOT NULL,
+    CPF             INTEGER     NOT NULL,
+    RG              INTEGER     NOT NULL,
+    TELEFONE        INTEGER,
+    CELULAR         INTEGER     NOT NULL
+);
+
+
+
+CREATE TABLE CLIENTES_ENDERECO (
+    ID_END_CLIENTE INTEGER      PRIMARY KEY AUTOINCREMENT
+                                UNIQUE,
+    RUA            STRING (30)  NOT NULL,
+    NUMERO         INTEGER (10) NOT NULL,
+    COMPLEMENTO    STRING (30)  NOT NULL,
+    BAIRRO         STRING (30)  NOT NULL,
+    CIDADE         STRING (30)  NOT NULL,
+    ESTADO         STRING (20)  NOT NULL
+);
+
+
+
+CREATE TABLE ESTOQUES (
+    ID_ESTOQUE INTEGER PRIMARY KEY AUTOINCREMENT
+                       UNIQUE,
+    ID_LIVRO   INTEGER CONSTRAINT fk_estoques_livros REFERENCES LIVROS (ID_LIVRO),
+    QUANTIDADE INTEGER NOT NULL
+);
+
+
+
+CREATE TABLE GENEROS (
+    ID_GENERO  INTEGER     PRIMARY KEY AUTOINCREMENT,
+    DES_GENERO STRING (30) NOT NULL
+);
+
+
+
+CREATE TABLE ALUGUEL (
+    ID_ALUGUEL     INTEGER  PRIMARY KEY AUTOINCREMENT,
+    ID_CLIENTE     INTEGER  CONSTRAINT fk_vendas_clientes_info REFERENCES CLIENTES_INFO (ID_INFO_CLIENTE),
+    ID_LIVRO       INTEGER  CONSTRAINT fk_vendas_livros REFERENCES LIVROS (ID_LIVRO),
+    DATA_SAIDA     DATETIME NOT NULL,
+    DATA_DEVOLUCAO DATETIME
+);
+
+
+
+-------------//-------------
+
+
+Criação de Trigger:
+
+CREATE TRIGGER tgrEstoqueUpadate
+         AFTER UPDATE
+            ON ESTOQUE
+      FOR EACH ROW
+BEGIN
+    UPDATE LIVROS
+       SET QUANTIDADE = (
+               SELECT ESTOQUE.QUANTIDADE AS QTD_ESTOQUE
+                 FROM LIVROS
+                      INNER JOIN
+                      ESTOQUE ON LIVROS.ID = ESTOQUE.ID
+           )
+     WHERE LIVROS.ID = (
+                           SELECT ESTOQUE.ID
+                             FROM ESTOQUE
+                       );
+END;
+
+
+
+-------------//-------------
+
+
+Criação de Stored Procedures:
+
+CREATE PROCEDURE Buscar
+@CampoBusca STRING
+AS SELECT ID_LIVRO, NOME
+FROM LIVROS
+WHERE NOME = @CampoBusca
+
+EXECUTE Buscar 'Harry Potter e a Pedra Filosofal'
+
+
