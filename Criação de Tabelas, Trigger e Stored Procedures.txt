@@ -90,7 +90,7 @@ BEGIN
                SELECT ESTOQUE.QUANTIDADE AS QTD_ESTOQUE
                  FROM LIVROS
                       INNER JOIN
-                      ESTOQUE ON LIVROS.ID = ESTOQUE.ID
+                      ESTOQUE ON LIVROS.ID_LIVRO = ESTOQUE.ID
            )
      WHERE LIVROS.ID = (
                            SELECT ESTOQUE.ID
